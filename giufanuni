@@ -1,40 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>EMQX MQTT Pub/Sub</title>
-  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-</head>
-<body>
-  <h2>EMQX MQTT WebSocket - Pub/Sub</h2>
-  <input type="text" id="msg" placeholder="Scrivi un messaggio..." style="width: 300px;">
-  <button onclick="send()">Pubblica</button>
+const WebSocket = require('ws');
+const server = new WebSocket.Server({ port: 8080 });
 
-  <p id="status">Stato: Disconnesso</p>
-  <h3>Messaggi ricevuti:</h3>
-  <div id="messages" style="border:1px solid #ccc; padding:10px; width:400px; height:200px; overflow-y:auto;"></div>
+server.on('connection', (socket) => {
+  console.log('Nuova connessione');
+  
+  socket.on('message', (message) => {
+    console.log(`Messaggio ricevuto: ${message}`);
+    socket.send(`Hai inviato: ${message}`);
+  });
 
-  <script>
-    const topic = "giufanuni";
-    const client = mqtt.connect("ws://broker.emqx.io:8083/mqtt");
+  socket.on('close', () => {
+    console.log('Connessione chiusa');
+  });
+});
 
-    client.on("connect", function () {
-      document.getElementById("status").innerText = "Stato: Connesso al broker EMQX";
-      client.subscribe(topic);
-    });
-
-    function send() {
-      const msg = document.getElementById("msg").value;
-      client.publish(topic, msg);
-    }
-
-    client.on("message", function (topic, message) {
-      const div = document.getElementById("messages");
-      const p = document.createElement("p");
-      p.textContent = message.toString();
-      div.appendChild(p);
-      div.scrollTop = div.scrollHeight; // scorri in basso automaticamente
-    });
-  </script>
-</body>
-</html>
